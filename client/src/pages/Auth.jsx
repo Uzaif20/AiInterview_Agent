@@ -5,16 +5,25 @@ import {motion} from "motion/react"
 import { FcGoogle } from "react-icons/fc";
 import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../utils/firebase';
+import axios from 'axios';
+import { ServerUrl } from '../App.jsx';
 
 function Auth() {
   
   const handleGoogleAuth = async() =>{
     try{
       const response = await signInWithPopup(auth,provider)
-        console.log(response)
-    }catch (error){
-      console.log(error)
-    }
+      console.log("Firebase success:", response);
+        let User = response.user
+        let name = User.displayName
+        let email = User.email
+        const result = await axios.post(ServerUrl+"/api/auth/google" ,
+          { name, email}, {withCredentials:true})
+        console.log(result.data)
+      
+    }catch (error) {
+  console.log("Error:", error);
+}
   }
 
   return (
@@ -55,7 +64,6 @@ function Auth() {
             gap-3 py-3 bg-black text-white rounded-full shadow-md font-semibold'>
               <FcGoogle size={20} /> Continue with Google
             </motion.button>
-          
         </motion.div>
     </div>
   )
