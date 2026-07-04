@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.routes.js";
+import userRouter from "./routes/user.routes.js";
 
 dotenv.config();
 
@@ -22,6 +23,8 @@ app.get("/", (req, res) => {
 });
 
  app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
+
 
 const PORT = process.env.PORT || 8080;
 
