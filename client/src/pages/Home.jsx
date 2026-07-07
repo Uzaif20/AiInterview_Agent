@@ -6,7 +6,11 @@ function Home() {
       <div className='h-full flex items-align-center'>
         Welcome to Ai Interview IQ
         </div> 
+        <div> 
+          <button> Logout </button>
+         </div>
     </div>
+    
   )
 }
 
