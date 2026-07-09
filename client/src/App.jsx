@@ -9,7 +9,7 @@ export const ServerUrl = "http://localhost:8080";
 function App() {
   useEffect(() =>{
     const getUser = async() =>{
-      try
+      
     }
   })
 
