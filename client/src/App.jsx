@@ -2,16 +2,29 @@ import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Auth from './pages/Auth'
+import { linkWithCredential } from 'firebase/auth';
+import { useEffect } from 'react';
+import {useDispatch} from 'react-redux';
+import { setUserData } from './redux/userSlice';
 
 export const ServerUrl = "http://localhost:8080";
 
 
 function App() {
+  const dispatch = useDispatch()
   useEffect(() =>{
     const getUser = async() =>{
-      
+      try {
+        const result = await axios.get(ServerUrl + "/api/user/current-user",
+          {linkWithCredential:true})
+          dispatch(setUserData(result.data))
+        } catch (error) {
+        console.log(error)
+        dispatch(setUserData(null))
+      }
     }
-  })
+    getUser()
+  },[] )
 
   return (
     <Routes>
