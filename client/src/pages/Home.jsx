@@ -1,9 +1,12 @@
 import React from 'react'
+import Navbar from '../components/Navbar'
+
 
 function Home() {
   return (
-    <div className='bg-black min-h-screen flex flex-col'>
-      Home Page
+    <div
+    className='bg-[#f3f3f3] min-h-screen flex flex-col'>
+      <Navbar></Navbar>
     </div>
     
   )
