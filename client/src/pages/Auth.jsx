@@ -9,7 +9,7 @@ import axios from 'axios';
 import { ServerUrl } from '../App.jsx';
 import { useNavigate } from 'react-router-dom';
 
-function Auth() {
+function Auth( isModel = false) {
   const navigate = useNavigate();
   const handleGoogleAuth = async() =>{
     try{

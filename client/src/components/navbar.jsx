@@ -6,9 +6,10 @@ import { BsCoin } from "react-icons/bs";
 import { FaUserAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { GrLogout } from "react-icons/gr";
-import { ServerUrl } from "../App.jsx"
+import {ServerUrl} from "../App.jsx"
 import axios from 'axios';
 import { setUserData } from '../redux/userSlice.js';
+import AuthModel from './AuthModel.jsx';
 
 
 function Navbar() {
@@ -17,10 +18,12 @@ function Navbar() {
     const [showUserPop, setShowUserPop] = useState(false)
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const [showAuth, setShowAuth] =useState(false)
 
     const handleLogout = async ()=>{
         try {
-            await axios.post(ServerUrl + "/api/auth/logout", {},
+            await axios.post(ServerUrl + "/api/auth/logout",
+                {},
                 {withCredentials: true})
                 dispatch(setUserData(null))
                 setShowCreditPop(false)
@@ -32,12 +35,12 @@ function Navbar() {
     }
 
   return (
-    <motion.div 
+    <div 
     initial={{opacity:0, y:-40}}
     animate={{opacity:1, y:0}}
     transition={{duration:1.0}}
     className=' bg-[#f3f3f3] flex justify-center px-4 pt-6 '>
-        <div className='w-full max-w-6xl bg-white shadow-sm rounded-[24px] 
+        <motion.div className='w-full max-w-6xl bg-white shadow-sm rounded-[24px] 
         border border-gray-200 px-8 py-4 flex justify-between items-center
         relative'>
             <div className='flex gap-4 item-center cursor-pointer'>
@@ -51,7 +54,12 @@ function Navbar() {
 
             <div className='flex items-center gap-6 relative'>
                 <div className='relative'>
-                    <button onClick={()=> {setShowCreditPop (!showCreditPop);
+                    <button onClick={()=> {
+                        if(!userData){
+                            setShowAuth(true)
+                            return;
+                        }
+                        setShowCreditPop (!showCreditPop);
                         setShowUserPop (false)
                     } }
                     className='flex items-center gap-3 bg-gray-100
@@ -72,7 +80,12 @@ function Navbar() {
                     )}
                 </div>
                 <div className='relative'>
-                    <button onClick={()=> {setShowUserPop (!showUserPop)
+                    <button onClick={()=> {
+                         if(!userData){
+                            setShowAuth(true)
+                            return;
+                        }
+                        setShowUserPop (!showUserPop)
                         setShowCreditPop (false)
                     }} 
                     className='w-9 h-9 bg-black text-white rounded-full
@@ -99,10 +112,10 @@ function Navbar() {
                         </div>
                     )}
                 </div>
-                
             </div>
-        </div>
-    </motion.div>
+        </motion.div>
+        {showAuth && <AuthModel onClose ={()=> setShowAuth(false)}/>}
+    </div>
   )
 }
 
