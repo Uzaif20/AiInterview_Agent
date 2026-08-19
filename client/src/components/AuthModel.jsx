@@ -17,7 +17,7 @@ function AuthModel({onClose}) {
     bg-black/10 backdrop-blur-sm px-4 '>
       <div className='relative w-full max-w-md'>
           <button onClick={onClose}
-          className='absolute right-5 text-gray-800  hover:text-black text-xl'>
+          className='absolute right-5  text-gray-800  hover:text-black text-xl'>
             <FaTimes sixe={18}/>
             <Auth isModel={true}></Auth>
           </button>
