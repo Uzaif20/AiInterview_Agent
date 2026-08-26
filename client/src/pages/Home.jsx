@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { useSelector } from "react-redux";
 import { motion } from "motion/react";
 import {
@@ -272,25 +273,28 @@ function Home() {
                   <div className="flex items-center justify-center md:flex-row  gap-8">
                     <div className=":w-1/2 ">
                       <h3 className="font-semibold mb-3 text-xl">
-
+                        {mode.title}
                       </h3>
+                      <p className="text-gray-500 text-sm leading-relaxed">
+                        {mode.desc}
+                      </p>
                     </div>
-                    <div className="w-full  md:w-1/2 ">
-                      <div>
-                        <h3 className="font-bold text-xl mb-3">{mode.title}</h3>
-                        <p className="text-gray-500 text-sm leading-relaxed">
-                          {mode.desc}
-                        </p>
+                      <div className="w-1/2 flex justify-end">
+                        <img
+                          src={mode.img}
+                          alt={mode.title}
+                          className="w-28 h-28 object-contain"
+                        />
                       </div>
                     </div>
                   </div>
-                </div>
               ))}
             </div>
           </div>
         </div>
       </div>
       {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
+        <Footer></Footer>
     </div>
   );
 }
