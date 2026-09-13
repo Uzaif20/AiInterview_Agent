@@ -1,5 +1,6 @@
 import fs from "fs";
 import * as pdfjsLib from "pdfjs-dist";
+import { askAi } from "../services/openRouter.services,js";
 
 export const analyzeResume = async (req, res) => {
   try {
@@ -29,24 +30,62 @@ export const analyzeResume = async (req, res) => {
     // 6. Extract text from every page
     let resumeText = "";
 
-    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       const page = await pdf.getPage(pageNumber);
-      const textContent = await page.getTextContent();
+      const content = await page.getTextContent();
 
-      const pageText = textContent.items.map((item) => item.str).join(" ");
+      const pageText = content.items.map((item) => item.str).join(" ");
 
       resumeText += pageText + "\n";
     }
 
+    resumeText = resumeText
+    .replace(/\s+/g," ")
+    .trim();
+
+    const message = [
+      {
+        role: "system",
+        content: `
+        Extract structured data from resume.
+        
+        return srtictly JSON:
+        {
+        "role" : "string",
+        "experience": "string",
+        "projects" :["projects1", Projects2],
+        "skills" :["skill1", skill2],
+        }
+        `
+      },
+      {
+        role:"User",
+        content: resumeText
+      }
+    ];
+
+    const aiResponse= await askAi(message)
+    const parsed  = JSON.parse(aiResponse);
+
+    fs.unlinkSync(filePath)
+
+
     // 7. Send extracted text to frontend
-    res.status(200).json({
-      message: "Resume analyzed successfully",
+    res.json({
+      role:parsed.role,
+      experience: parsed.experience,
+      projects:parsed.projects,
+      skills: parsed.skills,
       resumeText,
     });
   } catch (error) {
     console.error("Resume analysis error:", error.message);
 
-    res.status(500).json({
+    if(req.file && fs.existsSync(req.file.path)){
+      fs.unlinkSync(req.file.path);
+    }
+
+    return res.status(500).json({
       message: "Failed to analyze resume",
     });
   }

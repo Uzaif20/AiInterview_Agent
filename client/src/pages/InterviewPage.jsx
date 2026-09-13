@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import Step1Setup from '../components/Step1Setup';
+import Step1SetUp from '../components/Step1SetUp';
 import Step3Report from '../components/Step3Report';
 import { data } from 'react-router-dom';
 import Step2Interview from '../components/step2Interview';
@@ -12,7 +12,7 @@ function InterviewPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {step === 1 && (
-        <Step1Setup
+        <Step1SetUp
           onStart={(data) => {
             setInterviewData(data);
             setStep(2);
