@@ -120,14 +120,48 @@ function Step1Setup({onStart}) {
             </div>
 
             <select
-                value={mode}
-                onChange={(e)=> setMode(e.target.value)}
-                className='w-full py-3 px-4  border border-gray-200
-                rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition'>
-                  <option value="Technical">Technical</option>
-                  <option value="HR">HR Interview</option>
-              </select>
+              value={mode}
+              onChange={(e) => setMode(e.target.value)}
+              className="w-full py-3 px-4  border border-gray-200
+                rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition"
+            >
+              <option value="Technical">Technical</option>
+              <option value="HR">HR Interview</option>
+            </select>
 
+            {!analysis && (
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                onClick={() => document.getElementById("resumeUpload").click()}
+                className="border-2 border-dashed border-gray-600
+                rounded-xl p-5 text-center cursor-pointer
+                hover:bg-green-50 border-green-500 transition"
+              >
+                <FaFileUpload className="text-4xl text-green-500 mx-auto mb-3" />
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  id="resumeUpload"
+                  className="hidden"
+                  onChange={(e) => setResumeFile(e.target.files[0])}
+                />
+                <p className="font-medium text-gray-400">
+                  {resumeFile
+                    ? resumeFile.name
+                    : "Click to upload resume (Optional)"}
+                </p>
+
+                {resumeFile && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    className="mt-4 bg-gray-900 text-white px-5 py-3 rounded-lg
+                  hover:bg-gray-700 transition"
+                  >
+                    
+                  </motion.button>
+                )}
+              </motion.div>
+            )}
           </div>
         </motion.div>
       </div>
