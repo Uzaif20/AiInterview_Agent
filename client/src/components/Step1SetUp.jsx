@@ -8,6 +8,9 @@ import {
   FaChartLine
 } from "react-icons/fa";
 import { useState } from 'react';
+import axios from "axios";
+import { ServerUrl } from '../App';
+import { linkWithCredential } from 'firebase/auth';
 
 function Step1Setup({onStart}) {
   
@@ -15,13 +18,41 @@ function Step1Setup({onStart}) {
   const [experience, setExperience] = useState("");
   const[mode,setMode] = useState("Technical");
   const[resumeFile,setResumeFile] = useState(null);
-  const [loading, setLoading] = useState("false");
+  const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
   const [skills, setSkills] = useState([]);
   const [resumeText,setResumeText] = useState("");
   const [analysis, setAnalysis] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
 
+  const handleUploadResume = async() =>{
+    if(!resumeFile || analyzing) return;
+    setAnalyzing(true)
+
+     const formData = new FormData();
+     formData.append("resume", resumeFile);
+    try {
+      const result = await axios.post(
+        ServerUrl + "/api/interview/resume",
+        formData,
+        { withCredentials: true },
+      );
+
+      console.log(result.data);
+
+      setRole(result.data.role || "");
+      setExperience(result.data.experience || "");
+      setProjects(result.data.projects || []);
+      setSkills(result.data.skills || []);
+      setResumeText(result.data.resumeText || "");
+      setAnalysis(true);
+      setAnalyzing(false);
+    } catch (error) {
+      console.log("Frontend error:", error);
+      console.log("Status:", error.response?.status);
+      console.log("Response:", error.response?.data);
+    }
+  }
 
   return (
     <motion.div
@@ -153,15 +184,25 @@ function Step1Setup({onStart}) {
 
                 {resumeFile && (
                   <motion.button
+                    onClick={(e)=>{e.stopPropagation();handleUploadResume()}}
                     whileHover={{ scale: 1.02 }}
                     className="mt-4 bg-gray-900 text-white px-5 py-3 rounded-lg
                   hover:bg-gray-700 transition"
                   >
-                    
+                    {analyzing ? "Analyzing.." : "Analyze Resume"}
                   </motion.button>
                 )}
               </motion.div>
             )}
+
+            <motion.button
+              disabled={!role || !experience}
+              className="w-full disabled:bg-gray-600 bg-green-600 text-center 
+            hover:bg-green-700 text-white py-3 rounded-full font-semibold
+            text-lg transition duration-300 shadow-md"
+            >
+              Start Interview
+            </motion.button>
           </div>
         </motion.div>
       </div>

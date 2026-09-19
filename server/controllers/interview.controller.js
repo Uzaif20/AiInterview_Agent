@@ -31,7 +31,7 @@ export const analyzeResume = async (req, res) => {
     let resumeText = "";
 
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNumber);
+      const page = await pdf.getPage(pageNum);
       const content = await page.getTextContent();
 
       const pageText = content.items.map((item) => item.str).join(" ");
@@ -39,9 +39,7 @@ export const analyzeResume = async (req, res) => {
       resumeText += pageText + "\n";
     }
 
-    resumeText = resumeText
-    .replace(/\s+/g," ")
-    .trim();
+    resumeText = resumeText.replace(/\s+/g, " ").trim();
 
     const message = [
       {
@@ -53,40 +51,49 @@ export const analyzeResume = async (req, res) => {
         {
         "role" : "string",
         "experience": "string",
-        "projects" :["projects1", Projects2],
-        "skills" :["skill1", skill2],
+        "projects" :["projects1", "Projects2"],
+        "skills" :["skill1", "skill2"],
         }
-        `
+        `,
       },
       {
-        role:"User",
-        content: resumeText
-      }
+        role: "user",
+        content: resumeText,
+      },
     ];
 
-    const aiResponse= await askAi(message)
-    const parsed  = JSON.parse(aiResponse);
+    const aiResponse = await askAi(message);
+   const cleanResponse = aiResponse
+     .replace(/```json/g, "")
+     .replace(/```/g, "")
+     .trim();
 
-    fs.unlinkSync(filePath)
+   const parsed = JSON.parse(cleanResponse);
 
+    fs.unlinkSync(filePath);
 
     // 7. Send extracted text to frontend
     res.json({
-      role:parsed.role,
+      role: parsed.role,
       experience: parsed.experience,
-      projects:parsed.projects,
+      projects: parsed.projects,
       skills: parsed.skills,
       resumeText,
     });
   } catch (error) {
-    console.error("Resume analysis error:", error.message);
+    console.error("========== RESUME ERROR ==========");
+    console.error(error);
+    console.error("Message:", error.message);
+    console.error("Stack:", error.stack);
+    console.error("=================================");
 
-    if(req.file && fs.existsSync(req.file.path)){
+    if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
 
     return res.status(500).json({
       message: "Failed to analyze resume",
+      error: error.message,
     });
   }
 };

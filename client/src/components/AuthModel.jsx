@@ -13,17 +13,23 @@ function AuthModel({onClose}) {
   }, [userData , onClose])
 
   return (
-    <div className='fixed inset-0 z-[999] flex  justify-center 
-    bg-black/10 backdrop-blur-sm px-4 '>
-      <div className='relative w-full max-w-md'>
-          <button onClick={onClose}
-          className='absolute right-5  text-gray-800  hover:text-black text-xl'>
-            <FaTimes sixe={18}/>
-            <Auth isModel={true}></Auth>
-          </button>
+    <div
+      className="fixed inset-0 z-[999] flex  justify-center 
+    bg-black/10 backdrop-blur-sm px-4 "
+    >
+      <div className="relative w-full max-w-md">
+        <button
+          onClick={onClose}
+          className="absolute right-5  text-gray-800  hover:text-black text-xl"
+        >
+          <FaTimes sixe={18} />
+        </button>
+
+        {/* Auth Component */}
+        <Auth isModel={true}></Auth>
       </div>
     </div>
-  )
+  );
 }
 
 export default AuthModel
