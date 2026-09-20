@@ -22,7 +22,7 @@ function Step1Setup({onStart}) {
   const [projects, setProjects] = useState([]);
   const [skills, setSkills] = useState([]);
   const [resumeText,setResumeText] = useState("");
-  const [analysis, setAnalysis] = useState(false);
+  const [analysisDone, setAnalysisDone] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
 
   const handleUploadResume = async() =>{
@@ -45,7 +45,7 @@ function Step1Setup({onStart}) {
       setProjects(result.data.projects || []);
       setSkills(result.data.skills || []);
       setResumeText(result.data.resumeText || "");
-      setAnalysis(true);
+      setAnalysisDone(true);
       setAnalyzing(false);
     } catch (error) {
       console.log("Frontend error:", error);
@@ -160,7 +160,7 @@ function Step1Setup({onStart}) {
               <option value="HR">HR Interview</option>
             </select>
 
-            {!analysis && (
+            {!analysisDone && (
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 onClick={() => document.getElementById("resumeUpload").click()}
@@ -184,13 +184,50 @@ function Step1Setup({onStart}) {
 
                 {resumeFile && (
                   <motion.button
-                    onClick={(e)=>{e.stopPropagation();handleUploadResume()}}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUploadResume();
+                    }}
                     whileHover={{ scale: 1.02 }}
                     className="mt-4 bg-gray-900 text-white px-5 py-3 rounded-lg
                   hover:bg-gray-700 transition"
                   >
                     {analyzing ? "Analyzing.." : "Analyze Resume"}
                   </motion.button>
+                )}
+              </motion.div>
+            )}
+
+            {analysisDone && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gray-50 border-gray-200 rounded-xl p-5 space-y-4"
+              >
+                <h3 className="text-lg font-semibold text-gray-700 ">
+                  Resume Analysis Result{" "}
+                </h3>
+                {projects.length > 0 && (
+                  <div>
+                    <p className="font-medium text-gray-700 mb-1">Projects:</p>
+                    <ul className="list-inside list-disc text-gray-600 space-y-1">
+                      {projects.map((p, i) => (
+                        <li key={i}>{p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {skills.length > 0 && (
+                  <div>
+                    <p className="font-medium text-gray-700 mb-1">Skills:</p>
+                    <div className="flex flex-wrap gap-2 ">
+                      {skills.map((s, i) => (
+                        <span className='bg-green-100 text-green-800 px-3 py-1 text-sm rounded-full '
+                        key={i}>{s}</span>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </motion.div>
             )}
