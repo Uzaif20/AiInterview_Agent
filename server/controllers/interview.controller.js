@@ -240,3 +240,33 @@ export const generateQuestion = async(req, res) =>{
         });
   }
 }
+
+export const submitAnswer = async(req, res) => {
+  try {
+    const {interviewId, questionIndex, timeTaken, answer} = req.body;
+
+    const interview = await Interview.findById(interviewId)
+    const submitAnswer =  interview.questions[questionIndex]
+
+    if(!answer){
+      questions.score = 0;
+      questions.feedback = "You did not submit an answer.";
+      questions.answer = "";
+
+      await interview.save();
+
+      return res.json({
+        feedback : question.feedback
+      });
+    }
+
+    if(timeTaken > questions.timeLimit){
+      question.score = 0;
+      questions.feedback = "Time limit exced";
+
+    }
+
+  } catch (error) {
+    
+  }
+}
