@@ -35,7 +35,7 @@ const interviewSchema = new mongoose(
     resumeText:{
       type: String
     },
-    question:[questionsSchema],
+    questions:[questionsSchema],
     finalScore:{type:Number, default:0},
     status:{
       type:String,
@@ -49,4 +49,4 @@ const interviewSchema = new mongoose(
 const Interview = mongoose.model("Interview", interviewSchema)
 const Question = mongoose.model("Question", questionsSchema)
 
-export default Interview;
+export default (Interview, Question);
