@@ -11,9 +11,11 @@ import { useState } from 'react';
 import axios from "axios";
 import { ServerUrl } from '../App';
 import { linkWithCredential } from 'firebase/auth';
+import { useDispatch, useSelector } from 'react-redux';
 
 function Step1Setup({onStart}) {
-  
+  const {userData} = useSelector((state)=>state.user);
+  const dispatch = useDispatch()
   const[role,setRole] = useState("");
   const [experience, setExperience] = useState("");
   const[mode,setMode] = useState("Technical");
@@ -51,6 +53,26 @@ function Step1Setup({onStart}) {
       console.log("Frontend error:", error);
       console.log("Status:", error.response?.status);
       console.log("Response:", error.response?.data);
+    }
+  }
+
+  const handleStart = async() =>{
+    setLoading(true)
+    try {
+       const result = await axios.post(
+         ServerUrl + "/api/interview/generate-question",
+         {
+           role,
+           experience,
+           mode,
+           skills,
+           projects,
+           resumeText,
+         }, {withCredentials:true});
+
+         console.log(result.data)
+    } catch (error) {
+      
     }
   }
 
