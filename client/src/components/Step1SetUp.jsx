@@ -12,6 +12,7 @@ import axios from "axios";
 import { ServerUrl } from '../App';
 import { linkWithCredential } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
+import { setUserData } from '../redux/userSlice';
 
 function Step1Setup({onStart}) {
   const {userData} = useSelector((state)=>state.user);
@@ -70,9 +71,21 @@ function Step1Setup({onStart}) {
            resumeText,
          }, {withCredentials:true});
 
-         console.log(result.data)
+         console.log(result.data);
+         if(userData){
+          dispatch(
+            setUserData({ ...userData, credits: result.data
+              .creditsLeft }));
+         }
+         setLoading(false);
+         onStart(result.data)
+
     } catch (error) {
-      
+     console.log("FE error:", error);
+     console.log("Status:", error.response?.status);
+     console.log("Backend response:", error.response?.data);
+
+     setLoading(false);
     }
   }
 
@@ -255,12 +268,13 @@ function Step1Setup({onStart}) {
             )}
 
             <motion.button
-              disabled={!role || !experience}
+            onClick={handleStart}
+              disabled={!role || !experience || loading}
               className="w-full disabled:bg-gray-600 bg-green-600 text-center 
             hover:bg-green-700 text-white py-3 rounded-full font-semibold
             text-lg transition duration-300 shadow-md"
             >
-              Start Interview
+              {loading ? "Starting..." : "Start Interview"}
             </motion.button>
           </div>
         </motion.div>

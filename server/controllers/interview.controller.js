@@ -102,7 +102,7 @@ export const analyzeResume = async (req, res) => {
 
 export const generateQuestion = async(req, res) =>{
   try {
-    const {role, experience, mode, skills, projects, resumeText} = req.body
+    let {role, experience, mode, skills, projects, resumeText} = req.body
 
     role = role?.trim();
     experience = experience?.trim();
@@ -113,7 +113,7 @@ export const generateQuestion = async(req, res) =>{
        { msg:"Role, experince and mode are required"}
       );}
 
-      const user = await User.find(req.userId)
+      const user = await User.findById(req.userId)
 
       if(!user){
         return res.status(404).json({
@@ -122,7 +122,7 @@ export const generateQuestion = async(req, res) =>{
       }
 
       if(user.credits < 50){
-         return res.status(404=0).json({
+         return res.status(404).json({
            msg: "Not enough credits, minimum 50 required.",
          });
       }
@@ -131,7 +131,7 @@ export const generateQuestion = async(req, res) =>{
         ? projects.join(", ") : "None";
 
       const skillsText = Array.isArray(skills) && skills.length 
-        ? skillsText.join(", ") : "None";
+        ? skills.join(", ") : "None";
 
       const safeResume = resumeText?.trim() || "None";
 
@@ -202,7 +202,8 @@ export const generateQuestion = async(req, res) =>{
       const questionsArray = aiResponse
       .split("\n")
       .map(q => q.trim())
-      .slice(0,10);
+      .filter(q => q.length > 0)
+      .slice(0, 10);
 
       if(questionsArray.length === 0){
         return res.status(500).json({
@@ -219,7 +220,7 @@ export const generateQuestion = async(req, res) =>{
         experience,
         mode,
         resumeText: safeResume,
-        question: questionsArray.map((q, index) => ({
+        questions: questionsArray.map((q, index) => ({
           question:q,
           difficulty:["easy","easy","easy","medium","medium","medium","medium",
                       "hard","hard","hard"],
