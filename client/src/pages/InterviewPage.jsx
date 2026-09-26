@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 import Step1SetUp from '../components/Step1SetUp';
 import Step3Report from '../components/Step3Report';
 import { data } from 'react-router-dom';
-import Step2Interview from '../components/step2Interview';
+import Step2Interview from '../components/Step2Interview';
 
 function InterviewPage() {
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(2);
   const [interviewData, setInterviewData] = useState(null);
   const [report, setReport] = useState(null)
   return (
@@ -22,14 +22,14 @@ function InterviewPage() {
 
       {step === 2 && (
         <Step2Interview interviewData={interviewData}
-      onFinish={(report)=>{setInterviewData(report);
+      onFinish={(report)=>{setReport(report);
         setStep(3)
       } }
       />
       )}
 
       {step === 3 && <Step3Report 
-      report={interviewData}/>}
+      report={report}/>}
     </div>
   );
 }
