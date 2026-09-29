@@ -65,7 +65,7 @@ function Step2Interview({ interviewData, onFinish }) {
     };
 
     loadVoices();
-    window.speechSynthesis.onvoiceschanged = losadVoices;
+    window.speechSynthesis.onvoiceschanged = loadVoices;
   }, []);
 
   const videoSources = voiceGender === "male" ? maleVideo : femaleVideo;
