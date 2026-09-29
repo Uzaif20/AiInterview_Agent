@@ -6,7 +6,7 @@ import Step2Interview from '../components/Step2Interview';
 
 function InterviewPage() {
 
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(1);
   const [interviewData, setInterviewData] = useState(null);
   const [report, setReport] = useState(null)
   return (
@@ -22,7 +22,7 @@ function InterviewPage() {
 
       {step === 2 && (
         <Step2Interview interviewData={interviewData}
-      onFinish={(report)=>{setReport(report);
+      onFinish={(reportData)=>{setReport(reportData);
         setStep(3)
       } }
       />

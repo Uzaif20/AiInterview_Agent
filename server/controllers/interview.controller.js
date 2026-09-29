@@ -223,10 +223,12 @@ export const generateQuestion = async(req, res) =>{
         questions: questionsArray.map((q, index) => ({
           question:q,
           difficulty:["easy","easy","easy","medium","medium","medium","medium",
-                      "hard","hard","hard"],
+                      "hard","hard","hard"][index],
           timeLimit:[60,60,60,90,90,90,90,120,120,120][index],
         }))
       })
+
+       await interview.save();
 
       res.json({
         interviewId: interview._id,
