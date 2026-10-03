@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import maleVideo from "../assets/Videos/maleVideo.mp4";
 import femaleVideo from "../assets/Videos/female-ai.mp4";
 import Timer from "./Timer";
@@ -14,10 +14,10 @@ function Step2Interview({ interviewData, onFinish }) {
   const recognitionRef = useRef(null);
   const [isAIPlaying, setIsAIPlaying] = useState(false);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(5);
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [timeLeft, setTimeLeft] = useState(questions[0]?.timeLeft || 60);
+  const [timeLeft, setTimeLeft] = useState(questions[0].timeLimit );
   const [selectedVoice, setSelectedVoice] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(null);
   const [voiceGender, setVoiceGender] = useState("female");
@@ -81,9 +81,9 @@ function Step2Interview({ interviewData, onFinish }) {
       window.speechSynthesis.cancel();
 
       // add natural pause after comma and full stop
-      const humantext = text.replace(/,/g, ", ...").replace(/\./g, ". ...");
+      const humanText = text.replace(/,/g, ", ...").replace(/\./g, ". ...");
 
-      const utterance = new SpeechSynthesisUtterance(humantext);
+      const utterance = new SpeechSynthesisUtterance(humanText);
 
       utterance.voice = selectedVoice;
 
@@ -99,7 +99,7 @@ function Step2Interview({ interviewData, onFinish }) {
 
       utterance.onend = () =>{
         videoRef.current?.pause();
-        videoRef.current.current.time = 0;
+        videoRef.current.currentTime = 0;
         setIsAIPlaying(false);
 
         setTimeout(() =>{
@@ -114,6 +114,97 @@ function Step2Interview({ interviewData, onFinish }) {
 
     });
   };
+
+  useEffect( () =>{
+    if(!selectedVoice){
+      return;
+    }
+
+    const runIntro = async() =>{
+      if(isIntroPhase){
+        await speakText(
+          `Hi ${userName}, it's great to meet you today. I hope you are feeling 
+          confident and ready.`
+        )
+
+        await speakText(
+          "I'll ask you few question. just answer naturally, and take your time let's begin."
+        );
+
+        setIsIntroPhase(false);
+      }
+      else if(currentQuestion) {
+        await new Promise(r => setTimeout(r, 1000));
+
+        if(currentIndex === questions.length -1){
+          await speakText("Alright, this one might be a bit more challenging.");
+        }
+
+        await speakText(currentQuestion.question);
+      }
+    }
+
+    runIntro()
+
+  },[selectedVoice, isIntroPhase, currentIndex])
+
+  useEffect(() =>{
+    if(isIntroPhase)return;
+    if(!currentQuestion)return;
+
+    const timer = setInterval(()=> {
+      setTimeLeft((prev)=>{
+        if(prev <=1){
+          clearInterval(timer)
+          return 0;
+        }
+        return prev - 1;
+      })
+    },1000);
+    return () => clearInterval(timer)
+  },[isIntroPhase, currentIndex])
+
+  useEffect(() => {
+    if (!("webkitSpeechRecognition" in window)) return;
+
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = false;
+
+    recognition.onresult = (event) => {
+    const transcript =
+      event.results[event.results.length - 1][0].transcript;
+
+    setAnswer((prev) => prev + " " + transcript);
+    }
+    recognitionRef.current = recognition;
+
+    }, []);
+
+  const startMic = () => {
+    if (recognitionRef.current && !isAIPlaying) {
+      try{
+      recognitionRef.current.start();
+      }catch { }
+    }
+  };
+
+  const stopMic =() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+
+  const toggleMic = () =>{
+    if(isMicOn){
+      stopMic();
+    } else {
+      startMic();
+    }
+    setIsMicOn(!isMicOn)
+  };
+
 
   return (
     <div
@@ -169,7 +260,7 @@ function Step2Interview({ interviewData, onFinish }) {
             <div className="h-px bg-gray-200"></div>
 
             <div className=" flex justify-center">
-              <Timer timeLeft="30" totalTime="60" />
+              <Timer timeLeft={timeLeft} totalTime={currentQuestion.timeLimit} />
             </div>
 
             <div className="h-px bg-gray-200"></div>
@@ -198,7 +289,7 @@ function Step2Interview({ interviewData, onFinish }) {
             Ai Smart Interview
           </h2>
 
-          <div
+          {!isIntroPhase && <div
             className="relative mb-6 bg-gray-50 p-4 sm:p-6 rounded-2xl
           border border-gray-200 shadow-sm"
           >
@@ -211,9 +302,12 @@ function Step2Interview({ interviewData, onFinish }) {
             >
               {currentQuestion?.question}
             </div>
-          </div>
+          </div>}
+
           <textarea
             placeholder="Type your answer here"
+            onChange={(e) => setAnswer(e.target.value)}
+            value={answer}
             className="flex-1 bg-gray-100 p-4 sm:p-6 rounded-2xl resize-none
             outline-none border border-gray-200 focus:ring-2 
             focus:ring-emerald-600 transition text-gray-800"
