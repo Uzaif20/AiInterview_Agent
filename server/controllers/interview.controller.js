@@ -158,7 +158,7 @@ export const generateQuestion = async(req, res) =>{
 
             Speak in simple, natural english as if you are directly talking to the candicate.
 
-            Generate exactly 10 interview question.
+            Generate exactly 5 interview question.
 
             Strict rules:
             -Each question must contain between 15 to 20 words.
@@ -173,22 +173,18 @@ export const generateQuestion = async(req, res) =>{
             Difficulty progression:
               Question 1 → easy  
               Question 2 → easy  
-              Question 3 → easy  
+              Question 3 → medium  
               Question 4 → medium  
-              Question 5 → medium
-              Question 6 → medium  
-              Question 7 → medium  
-              Question 8 → hard  
-              Question 9 → hard  
-              Question 10 → hard  
+              Question 5 → hard
 
               Make questions based on the candidate’s role, experience,interviewMode,
                projects, skills, and resume details.
-          `},
-          {
-        role: "user",
-        content: userPrompt
-      }
+          `,
+        },
+        {
+          role: "user",
+          content: userPrompt,
+        },
       ]; 
 
       const aiResponse = await askAi(message);
@@ -203,7 +199,7 @@ export const generateQuestion = async(req, res) =>{
       .split("\n")
       .map(q => q.trim())
       .filter(q => q.length > 0)
-      .slice(0, 10);
+      .slice(0, 5);
 
       if(questionsArray.length === 0){
         return res.status(500).json({
@@ -222,9 +218,8 @@ export const generateQuestion = async(req, res) =>{
         resumeText: safeResume,
         questions: questionsArray.map((q, index) => ({
           question:q,
-          difficulty:["easy","easy","easy","medium","medium","medium","medium",
-                      "hard","hard","hard"][index],
-          timeLimit:[60,60,60,90,90,90,90,120,120,120][index],
+          difficulty:["easy","easy","medium","medium","hard"][index],
+          timeLimit:[60,60,90,90,120][index],
         }))
       })
 
@@ -389,14 +384,14 @@ export const finishInterview = async(req, res) => {
      interview.finalScore = finalScore;
      interview.status = "completed";
 
-     interview.save();
+     await interview.save();
 
      return res.status(200).json({
       finalScore : Number(finalScore.toFixed(1)),
       confidence : Number(avgConfidence.toFixed(1)),
       correctness : Number(avgCorrectness.toFixed(1)),
       communication : Number(avgCommunication.toFixed(1)),
-      questionWiseScore: interview.question.map((q) => ({
+      questionWiseScore: interview.questions.map((q) => ({
         question: q.question,
         score: q.score || 0,
         confidence: q.confidence || 0,
@@ -409,7 +404,68 @@ export const finishInterview = async(req, res) => {
 
   } catch (error) {
     return res.status(500).json({
-      msg: `Failed to submit answer ${error}`
+      msg: `Failed to finish interview ${error}`
     })
+  }
+}
+
+export const getMyInterviews = async(req, res) =>{
+  try {
+    const interview = await Interview.find({userId:req.userId})
+    .sort({createdAt: -1})
+    .select("role experience mode finalScore status createdAt ");
+
+    return res.status(200).json({interview})
+  } catch (error) {
+     return res.status(500).json({
+       msg: `Failed to find currentUser Interview ${error}`,
+     });
+  }
+}
+
+export const getInterviewReport = async (req, res) =>{
+  try {
+    const interview = await Interview.findById(req.params.id);
+
+    if(!interview){
+      return res.status(404).json({
+        msg:"INterview not found"
+      })
+    }
+
+    const totalQuestions = interview.questions.length;
+
+    let totalConfidence = 0;
+    let totalCorrectness = 0;
+    let totalCommunication = 0;
+
+    interview.questions.forEach((q) => {
+      totalConfidence += q.confidence || 0;
+      totalCorrectness += q.correctness || 0;
+      totalCommunication += q.communication || 0;
+    });
+
+    const avgConfidence = totalQuestions ? totalConfidence / totalQuestions : 0;
+
+    const avgCorrectness = totalQuestions
+      ? totalCorrectness / totalQuestions
+      : 0;
+
+    const avgCommunication = totalQuestions
+      ? totalCommunication / totalQuestions
+      : 0;
+
+      return res.json({
+        finalScore: interview.finalScore,
+        confidence: Number(avgConfidence.toFixed(1)),
+        communication: Number(avgCommunication.toFixed(1)),
+        correctness: Number(avgCorrectness.toFixed(1)),
+        questionWiseScore: interview.questions,
+      });
+   
+  } catch (error) {
+    return res.status(500).json({
+      msg: `Failed to find currentUser Interview report ${error}`,
+    });
   }
 }
