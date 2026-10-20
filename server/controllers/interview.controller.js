@@ -426,7 +426,7 @@ export const getMyInterviews = async(req, res) =>{
 export const getInterviewReport = async (req, res) =>{
   try {
     const interview = await Interview.findById(req.params.id);
-
+    
     if(!interview){
       return res.status(404).json({
         msg:"INterview not found"
