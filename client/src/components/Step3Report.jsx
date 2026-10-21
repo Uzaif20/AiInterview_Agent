@@ -1,5 +1,5 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import { motion } from "motion/react";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
@@ -13,10 +13,10 @@ import {
   Tooltip,
   Area,
 } from "recharts";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
-
-
-function Step3Report({report}) {
+function Step3Report({ report }) {
   if (!report) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -24,35 +24,35 @@ function Step3Report({report}) {
       </div>
     );
   }
-  
-  const navigate = useNavigate()
+
+  const navigate = useNavigate();
 
   const {
     finalScore = 0,
-    confidence =0,
+    confidence = 0,
     communication = 0,
     correctness = 0,
     questionWiseScore = [],
   } = report;
 
-  const questionScoreData = questionWiseScore.map((score,index)=>({
-    name: `Q${index+1}`,
+  const questionScoreData = questionWiseScore.map((score, index) => ({
+    name: `Q${index + 1}`,
     score: score.score || 0,
-  }))
+  }));
 
-  const skills= [
-    {label:"Confidence" , value: confidence},
-    {label:"Communication" , value: communication},
-    {label:"Correctness" , value: correctness},
+  const skills = [
+    { label: "Confidence", value: confidence },
+    { label: "Communication", value: communication },
+    { label: "Correctness", value: correctness },
   ];
 
   let performanceText = "";
   let shortTagLine = "";
 
-  if(finalScore >= 8){
+  if (finalScore >= 8) {
     performanceText = "Ready for job opportunity";
     shortTagLine = "Excellent clarity and structured response";
-  } else if(finalScore >= 5){
+  } else if (finalScore >= 5) {
     performanceText = "Need minor improvement before interview";
     shortTagLine = "Good foundation, refine articulation";
   } else {
@@ -63,16 +63,119 @@ function Step3Report({report}) {
   const score = finalScore;
   const percentage = (score / 10) * 100;
 
-const downloadPDF =() => {
-const doc = new jsPDF("p","mm","a4");
+  const downloadPDF = () => {
+    const doc = new jsPDF("p", "mm", "a4");
 
-I
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const contentWidth = pageWidth - margin * 2;
 
-const pageWidth = doc.internal.pageSize.getWidth();
-const margin = 20;
-const contentWidth = pageWidth - margin * 2;
+    let currentY = 25;
 
-let currentY = 25;
+    //=======================Title==============================
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(34, 197, 94);
+    doc.text("AI Interview Performance Report", pageWidth / 2, currentY, {
+      align: "center",
+    });
+
+    currentY += 5;
+
+    // underline
+    doc.setDrawColor(34, 197, 94);
+    doc.line(margin, currentY + 2, pageWidth - margin, currentY + 2);
+
+    currentY += 15;
+
+    //==================Final Score Box================================
+    doc.setFillColor(240, 253, 244);
+    doc.roundedRect(margin, currentY, contentWidth, 20, 4, 4, "F");
+
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Final Score: ${finalScore}/10`, pageWidth / 2, currentY + 12, {
+      align: "center",
+    });
+
+    currentY += 30;
+
+    //=========================Skill Box=====================================
+    doc.setFillColor(249, 250, 251);
+    doc.roundedRect(margin, currentY, contentWidth, 30, 4, 4, "F");
+
+    doc.setFontSize(12);
+
+    doc.text(`Confidence: ${confidence}`, margin + 10, currentY + 10);
+    doc.text(`Communication: ${communication} `, margin + 10, currentY + 18);
+    doc.text(`Correctness: ${correctness}`, margin + 10, currentY + 26);
+
+    currentY += 45;
+
+    //==========================Advice===================================
+    let advice = "";
+
+    if (finalScore >= 8) {
+      advice =
+        "Excellent performance. Maintain confidence and structure. Continue refining clarity and supporting answers with strong real-world examples.";
+    } else if (finalScore >= 5) {
+      advice =
+        "Good foundation shown. Improve clarity and structure. Practice delivering concise, confident answers with stronger supporting examples.";
+    } else {
+      advice =
+        "Significant improvement required. Focus on structured thinking, clarity, and confident delivery. Practice answering aloud regularly.";
+    }
+
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(220);
+    doc.roundedRect(margin, currentY, contentWidth, 35, 4, 4);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Professional Advice", margin + 10, currentY + 10);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+
+    const splitAdvice = doc.splitTextToSize(advice, contentWidth - 20);
+    doc.text(splitAdvice, margin + 10, currentY + 20);
+
+    currentY += 50;
+
+    //========================Question Table============================
+    autoTable(doc, {
+      startY: currentY,
+      margin: { left: margin, right: margin },
+      head: [["#", "Question", "Score", "Feedback"]],
+      body: questionWiseScore.map((q, i) => [
+        `${i + 1}`,
+        q.question,
+        `${q.score}/10`,
+        q.feedback,
+      ]),
+
+      styles: {
+        fontSize: 9,
+        cellPadding: 5,
+        valign: "top",
+      },
+      headStyles: {
+        fillColor: [34, 197, 94],
+        textColor: 255,
+        halign: "center",
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: "center" }, // index
+        1: { cellWidth: 55 }, // question
+        2: { cellWidth: 20, halign: "center" }, // score
+        3: { cellWidth: "auto" }, // feedback
+      },
+      alternateRowStyles: {
+        fillColor: [249, 250, 251],
+      },
+    });
+
+    doc.save("Ai_Interview_Report.pdf");
+  };
 
   return (
     <div
@@ -103,6 +206,7 @@ let currentY = 25;
         </div>
 
         <button
+        onClick={downloadPDF}
           className="bg-emerald-600 hover:bg-emerald-700 text-white
         py-3 px-3 rounded-xl shadow-md transition-all duration-300 font-bold
         text-sm sm:text-base text-nowrap "
@@ -207,40 +311,49 @@ let currentY = 25;
           </motion.div>
 
           <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className='bg-white rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-8'>
-            <h3 className='text-base sm:text-lg font-semibold text-gray-700 mb-6'>
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-8"
+          >
+            <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-6">
               Question Breakdown
             </h3>
-            <div className='space-y-6'>
-              {questionWiseScore.map((q,i) =>(
-                <div key={i} className='bg-gray-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl
-                border border-gray-200'>
-                  <div className='flex flex-col sm:flex-row sm:justify-between
-                  sm:items-start gap-3 mb-4'>
+            <div className="space-y-6">
+              {questionWiseScore.map((q, i) => (
+                <div
+                  key={i}
+                  className="bg-gray-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl
+                border border-gray-200"
+                >
+                  <div
+                    className="flex flex-col sm:flex-row sm:justify-between
+                  sm:items-start gap-3 mb-4"
+                  >
                     <div>
-                      <p className='text-xs  text-gray-400'>
-                        Question {i + 1}
-                      </p>
-                      <p className='font-semibold text-gray-800 text-sm
-                      sm:text-base leading-relaxed'>
+                      <p className="text-xs  text-gray-400">Question {i + 1}</p>
+                      <p
+                        className="font-semibold text-gray-800 text-sm
+                      sm:text-base leading-relaxed"
+                      >
                         {q.question || "Question not available"}
                       </p>
                     </div>
-                    <div className='bg-green-100 text-green-600 px-3 py-1 
-                    rounded-full text-bold text-xs sm:text-sm w-fit '>
+                    <div
+                      className="bg-green-100 text-green-600 px-3 py-1 
+                    rounded-full text-bold text-xs sm:text-sm w-fit "
+                    >
                       {q.score ?? 0}/10
                     </div>
                   </div>
 
-                  <div className=' bg-green-50 border border-green-200 p-4 rounded-lg'>
-                    <p className='text-xs text-green-600 font-semibold mb-1'>
+                  <div className=" bg-green-50 border border-green-200 p-4 rounded-lg">
+                    <p className="text-xs text-green-600 font-semibold mb-1">
                       Ai Feedback
                     </p>
-                    <p className=' text-xs text-gray-700 leading-relaxed'>
+                    <p className=" text-xs text-gray-700 leading-relaxed">
                       {q.feedback && q.feedback.trim() !== ""
-                      ? q.feedback : "NO feedback available for this answer"}
+                        ? q.feedback
+                        : "NO feedback available for this answer"}
                     </p>
                   </div>
                 </div>
@@ -251,7 +364,6 @@ let currentY = 25;
       </div>
     </div>
   );
-
 }
 
-export default Step3Report
+export default Step3Report;
