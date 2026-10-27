@@ -11,7 +11,6 @@ import axios from 'axios';
 import { setUserData } from '../redux/userSlice.js';
 import AuthModel from './AuthModel.jsx';
 
-
 function Navbar() {
     const {userData} = useSelector((state)=> state.user)
     const [showCreditPop, setShowCreditPop] = useState(false)
